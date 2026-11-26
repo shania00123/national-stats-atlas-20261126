@@ -40,6 +40,12 @@
       if (point.value < min) min = point.value;
     });
     if (max === min) max = min + 1;
+    if (min < 0) {
+      // Reserve extra room below the plot so a negative bar's value label
+      // (drawn under the bar's lower end) clears the year labels.
+      padBottom = 48;
+      plotH = height - padTop - padBottom;
+    }
     var span = max - min;
     var zeroY = padTop + (max / span) * plotH;
     var slot = plotW / series.length;
