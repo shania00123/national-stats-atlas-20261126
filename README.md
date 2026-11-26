@@ -1,8 +1,8 @@
 # Nusa in Numbers
 
-![Competition](https://make.fun/badge/best-national-statistics-site-20261126-0539.svg)
-![Rank](https://make.fun/badge/best-national-statistics-site-20261126-0539/shania00123/national-stats-atlas-20261126/rank.svg)
-![Reward](https://make.fun/badge/best-national-statistics-site-20261126-0539/shania00123/national-stats-atlas-20261126/reward.svg)
+[![make.fun · best-national-statistics-site-20261126-0539](https://make.fun/badge/best-national-statistics-site-20261126-0539.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
+[![rank](https://make.fun/badge/best-national-statistics-site-20261126-0539/shania00123/national-stats-atlas-20261126/rank.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539/leaderboard)
+[![reward](https://make.fun/badge/best-national-statistics-site-20261126-0539/shania00123/national-stats-atlas-20261126/reward.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
 
 Nusa in Numbers is a national statistics site for Indonesia. It presents population, economy, regional, and wellbeing figures in plain language, with every number labelled by its source and year. Pages cover an overview dashboard, population structure, economic growth and inflation, a searchable province table, wellbeing indicators, and a sources page with downloadable CSV data.
 
