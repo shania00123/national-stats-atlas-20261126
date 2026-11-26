@@ -5,6 +5,7 @@
 
   var data = window.NusaData;
   var charts = window.NusaCharts;
+  var explorer = window.NusaExplorer;
   var esc = charts.escapeText;
 
   function sourceTag(source) {
@@ -52,6 +53,19 @@
     return '<div class="page-head"><h1>' + esc(title) + '</h1><p>' + esc(intro) + '</p></div>';
   }
 
+  // Island-group totals, computed by summing the BPS 2024 province figures.
+  function islandStrip() {
+    var cells = explorer.islandTotals().map(function (row) {
+      return '<div class="island-cell"><strong>' + esc(row.group) + '</strong>' +
+        '<span class="island-pop">' + row.population.toFixed(1) + 'M · ' + row.share.toFixed(1) + '%</span>' +
+        '<span class="island-meta">' + row.count + ' provinces · ' +
+        Math.round(row.density).toLocaleString('en-US') + '/km²</span></div>';
+    }).join('');
+    return '<section class="panel island-panel"><h2>Where people live — six island groups</h2>' +
+      '<div class="island-grid">' + cells + '</div>' +
+      '<p class="panel-note">Computed by summing the 38 BPS 2024 province populations and areas. Java holds the majority of the country on a small share of its land. ' + sourceTag('Computed from BPS · 2024') + '</p></section>';
+  }
+
   function renderOverview() {
     var h = data.headline;
     var growthBars = data.gdpGrowthSeries.map(function (point) {
@@ -79,6 +93,12 @@
       '</section>' +
       '<section class="ministat-band" aria-label="More key figures">' +
       miniStat(h.hdi) + miniStat(h.lifeExpectancy) + miniStat(h.literacy) + miniStat(h.internet) +
+      '</section>' +
+      islandStrip() +
+      '<section class="explore-cards" aria-label="Explore the data">' +
+      '<a class="explore-card" href="#/explore"><strong>Indicator Explorer</strong><span>Rank all 38 provinces or plot a national series, with the audit trail for every figure.</span></a>' +
+      '<a class="explore-card" href="#/explore"><strong>Compare provinces</strong><span>Put any two provinces side by side: population, density, area and ranks.</span></a>' +
+      '<a class="explore-card" href="#/regions"><strong>Province profiles</strong><span>Open any province for its ranks, share and density against the national average.</span></a>' +
       '</section>' +
       '<section class="split split-cover">' +
       '<article class="panel"><h2>GDP growth, 2019–2024</h2>' +
@@ -155,10 +175,11 @@
 
   function provinceRows(provinces) {
     if (provinces.length === 0) {
-      return '<tr><td colspan="7" class="empty-row">No province matches that filter and search.</td></tr>';
+      return '<tr><td colspan="8" class="empty-row">No province matches that filter and search.</td></tr>';
     }
     return provinces.map(function (province) {
-      return '<tr><td>' + esc(province.name) + '</td><td>' + esc(province.capital) + '</td><td>' +
+      return '<tr><td>' + explorer.rankOf(province, 'population') + '</td><td><a href="#/province/' +
+        explorer.slugOf(province.name) + '">' + esc(province.name) + '</a></td><td>' + esc(province.capital) + '</td><td>' +
         esc(province.island) + '</td><td>' + province.population.toFixed(1) + 'M</td><td>' +
         formatArea(province.area) + '</td><td>' + formatDensity(province) + '</td><td>' +
         formatShare(province.population) + '</td></tr>';
@@ -176,9 +197,9 @@
 
   function renderRegions() {
     var tiles = data.provinces.map(function (province) {
-      return '<div class="tile" style="' + tileStyle(province.population) + '">' +
+      return '<a class="tile" href="#/province/' + explorer.slugOf(province.name) + '" style="' + tileStyle(province.population) + '">' +
         '<strong>' + esc(province.name) + '</strong>' +
-        '<span>' + province.population.toFixed(1) + 'M · ' + formatShare(province.population) + '</span></div>';
+        '<span>' + province.population.toFixed(1) + 'M · ' + formatShare(province.population) + '</span></a>';
     }).join('');
     var filters = '<button type="button" class="filter-btn is-active" data-island="All">All</button>' +
       data.islandGroups.map(function (group) {
@@ -196,9 +217,9 @@
       '<button type="button" class="sort-btn" data-sort="name">Sort by name</button>' +
       '</div></div>' +
       '<p class="region-count" id="region-count">Showing 38 of 38 provinces</p>' +
-      '<div class="table-wrap"><table class="data-table"><thead><tr><th>Province</th><th>Capital</th><th>Island</th><th>Population</th><th>Area km²</th><th>Density /km²</th><th>Share</th></tr></thead>' +
+      '<div class="table-wrap"><table class="data-table"><thead><tr><th>Pop. rank</th><th>Province</th><th>Capital</th><th>Island</th><th>Population</th><th>Area km²</th><th>Density /km²</th><th>Share</th></tr></thead>' +
       '<tbody id="province-rows">' + provinceRows(data.provinces) + '</tbody></table></div>' +
-      '<p class="panel-note">Population in millions (BPS 2024 estimates), land area in km², density computed as population ÷ area, share of the 283.5M national total. ' + sourceTag('BPS · 2024') + '</p></section>' +
+      '<p class="panel-note">Population in millions (BPS 2024 estimates), land area in km², density computed as population ÷ area, share of the 283.5M national total. Open any province name for its full profile. ' + sourceTag('BPS · 2024') + '</p></section>' +
       '<section class="panel"><h2>Tile map — darker means larger share</h2><div class="tile-grid">' + tiles + '</div>' +
       '<p class="panel-note">Each tile is one of the 38 provinces; colour depth follows its share of national population. West Java alone holds 17.7%. ' + sourceTag('BPS · 2024') + '</p></section>';
   }
@@ -250,6 +271,14 @@
       '<section class="panel"><h2>Source list</h2>' +
       '<div class="table-wrap"><table class="data-table"><thead><tr><th>Indicator</th><th>Value</th><th>Source</th><th>Year</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section>' +
+      '<section class="panel"><h2>Figure audit — Explorer indicators</h2>' +
+      '<p>Every indicator in the <a href="#/explore">Indicator Explorer</a> carries this audit trail beside its chart, so a reader can check a figure before acting on it.</p>' +
+      '<div class="table-wrap"><table class="data-table"><thead><tr><th>Indicator</th><th>Unit</th><th>Source &amp; year</th><th>Frequency</th><th>Caveat</th></tr></thead><tbody>' +
+      data.indicators.map(function (item) {
+        return '<tr><td>' + esc(item.label) + '</td><td>' + esc(item.unit) + '</td><td>' +
+          esc(item.source) + ' · ' + esc(item.year) + '</td><td>' + esc(item.frequency) + '</td><td>' + esc(item.caveat) + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div></section>' +
       '<section class="panel"><h2>Download the data</h2>' +
       '<p>CSV files are generated in your browser from the same arrays that draw the charts.</p>' +
       '<div class="download-row">' +
@@ -259,6 +288,146 @@
       '</div></section>';
   }
 
+  function indicatorByKey(key) {
+    for (var i = 0; i < data.indicators.length; i++) {
+      if (data.indicators[i].key === key) return data.indicators[i];
+    }
+    return data.indicators[0];
+  }
+
+  // The audit trail shown beside every Explorer chart: what the figure is,
+  // where it came from, how to read it, and what would mislead.
+  function auditCard(indicator) {
+    return '<article class="panel audit-card"><h2>Figure audit — ' + esc(indicator.label) + '</h2>' +
+      '<dl class="audit-list">' +
+      '<div><dt>Definition</dt><dd>' + esc(indicator.definition) + '</dd></div>' +
+      '<div><dt>Unit</dt><dd>' + esc(indicator.unit) + '</dd></div>' +
+      '<div><dt>Source &amp; year</dt><dd>' + esc(indicator.source) + ' · ' + esc(indicator.year) + '</dd></div>' +
+      '<div><dt>Frequency</dt><dd>' + esc(indicator.frequency) + '</dd></div>' +
+      '<div><dt>How to read it</dt><dd>' + esc(indicator.howToRead) + '</dd></div>' +
+      '<div><dt>Caveat</dt><dd>' + esc(indicator.caveat) + '</dd></div>' +
+      '</dl></article>';
+  }
+
+  function explorerChart(indicator) {
+    if (indicator.mode === 'province') {
+      var top = explorer.rankedProvinces(indicator.key).slice(0, 10).map(function (row) {
+        return { label: row.province.name.replace('North ', 'N. ').replace('South ', 'S. ').replace('West ', 'W. ').replace('East ', 'E. ').replace('Central ', 'C. '), value: Math.round(row.value * 10) / 10 };
+      });
+      return charts.barChart(top, { unit: indicator.key === 'share' ? '%' : '', ariaLabel: indicator.label + ', top 10 provinces' });
+    }
+    var bars = explorer.seriesFor(indicator.key).map(function (point) {
+      return { label: String(point.year), value: point.value };
+    });
+    var unit = (indicator.key === 'growth' || indicator.key === 'inflation') ? '%' : (indicator.key === 'percapita' ? '' : 'M');
+    return charts.barChart(bars, { unit: unit, ariaLabel: indicator.label + ' by year' });
+  }
+
+  function explorerTable(indicator) {
+    if (indicator.mode === 'province') {
+      var rows = explorer.rankedProvinces(indicator.key).map(function (row) {
+        return '<tr><td>' + row.rank + '</td><td><a href="#/province/' + explorer.slugOf(row.province.name) + '">' +
+          esc(row.province.name) + '</a></td><td>' + esc(row.province.island) + '</td><td>' +
+          explorer.formatProvinceValue(row.value, indicator.key) + '</td></tr>';
+      }).join('');
+      return '<div class="table-wrap"><table class="data-table"><thead><tr><th>Rank</th><th>Province</th><th>Island group</th><th>' +
+        esc(indicator.label) + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }
+    var summary = explorer.seriesSummary(indicator.key);
+    var srows = explorer.seriesFor(indicator.key).map(function (point) {
+      return '<tr><td>' + point.year + '</td><td>' + explorer.formatSeriesValue(point.value, indicator.key) + '</td></tr>';
+    }).join('');
+    return '<p class="panel-note">From ' + explorer.formatSeriesValue(summary.first.value, indicator.key) + ' in ' + summary.first.year +
+      ' to ' + explorer.formatSeriesValue(summary.last.value, indicator.key) + ' in ' + summary.last.year +
+      '. Highest: ' + explorer.formatSeriesValue(summary.high.value, indicator.key) + ' (' + summary.high.year +
+      '). Lowest: ' + explorer.formatSeriesValue(summary.low.value, indicator.key) + ' (' + summary.low.year + '). ' +
+      sourceTag(indicator.source + ' · ' + indicator.year) + '</p>' +
+      '<div class="table-wrap"><table class="data-table"><thead><tr><th>Year</th><th>' + esc(indicator.label) +
+      '</th></tr></thead><tbody>' + srows + '</tbody></table></div>';
+  }
+
+  function provinceOptions(selectedName) {
+    return data.provinces.map(function (province) {
+      var selected = province.name === selectedName ? ' selected' : '';
+      return '<option value="' + esc(province.name) + '"' + selected + '>' + esc(province.name) + '</option>';
+    }).join('');
+  }
+
+  function compareCard(province) {
+    return '<article class="compare-card"><h3><a href="#/province/' + explorer.slugOf(province.name) + '">' + esc(province.name) + '</a></h3>' +
+      '<p class="compare-meta">' + esc(province.capital) + ' · ' + esc(province.island) + '</p>' +
+      '<ul class="compare-stats">' +
+      '<li>Population <strong>' + province.population.toFixed(1) + 'M</strong> (rank ' + explorer.rankOf(province, 'population') + ' of 38)</li>' +
+      '<li>Density <strong>' + Math.round(explorer.densityOf(province)).toLocaleString('en-US') + '/km²</strong> (rank ' + explorer.rankOf(province, 'density') + ')</li>' +
+      '<li>Land area <strong>' + formatArea(province.area) + ' km²</strong> (rank ' + explorer.rankOf(province, 'area') + ')</li>' +
+      '<li>Share of country <strong>' + formatShare(province.population) + '</strong></li>' +
+      '</ul></article>';
+  }
+
+  function comparePanel(aName, bName) {
+    var a = explorer.findProvince(explorer.slugOf(aName)) || data.provinces[11];
+    var b = explorer.findProvince(explorer.slugOf(bName)) || data.provinces[10];
+    var verdict = explorer.compareVerdict(a, b).map(function (line) {
+      return '<li>' + esc(line) + '</li>';
+    }).join('');
+    return '<div class="compare-grid">' + compareCard(a) + compareCard(b) + '</div>' +
+      '<ul class="verdict-list">' + verdict + '</ul>' +
+      '<p class="panel-note">Ranks and ratios computed from the BPS 2024 province figures. ' + sourceTag('Computed from BPS · 2024') + '</p>';
+  }
+
+  function renderExplore() {
+    var indicator = indicatorByKey('population');
+    var buttons = data.indicators.map(function (item) {
+      var active = item.key === indicator.key ? ' is-active' : '';
+      return '<button type="button" class="filter-btn' + active + '" data-indicator="' + esc(item.key) + '">' + esc(item.label) + '</button>';
+    }).join('');
+    return pageHead('Explore', 'Pick an indicator to rank every province or plot a national series — each figure with its audit trail — then compare any two provinces side by side.') +
+      '<section class="panel"><h2>Indicator Explorer</h2>' +
+      '<div class="filter-row" role="group" aria-label="Choose indicator">' + buttons + '</div>' +
+      '<div id="explorer-chart">' + explorerChart(indicator) + '</div>' +
+      '<p class="panel-note" id="explorer-caption">Top 10 provinces by population. Full ranking below. ' + sourceTag('BPS · 2024') + '</p>' +
+      '<div id="explorer-table">' + explorerTable(indicator) + '</div>' +
+      '<div class="download-row"><button type="button" class="download-btn" id="explorer-csv">Download this view as CSV</button></div>' +
+      '</section>' +
+      '<div id="explorer-audit">' + auditCard(indicator) + '</div>' +
+      '<section class="panel"><h2>Compare two provinces</h2>' +
+      '<div class="compare-controls">' +
+      '<label class="search-label">Province A <select id="compare-a">' + provinceOptions('West Java') + '</select></label>' +
+      '<label class="search-label">Province B <select id="compare-b">' + provinceOptions('Jakarta') + '</select></label>' +
+      '</div>' +
+      '<div id="compare-panel">' + comparePanel('West Java', 'Jakarta') + '</div></section>';
+  }
+
+  function renderProvince(slug) {
+    var province = explorer.findProvince(slug || '');
+    if (!province) {
+      return pageHead('Province not found', 'That province link does not match any of the 38 provinces.') +
+        '<section class="panel"><p><a href="#/regions">Back to all 38 provinces</a></p></section>';
+    }
+    var nationalDensity = 149;
+    var multiple = explorer.densityOf(province) / nationalDensity;
+    var island = explorer.islandTotals().filter(function (row) { return row.group === province.island; })[0];
+    var islandShare = (province.population / island.population) * 100;
+    return '<p class="crumb"><a href="#/regions">Regions</a> · <a href="#/explore">Explore</a></p>' +
+      pageHead(province.name, province.capital + ' · ' + province.island + ' — province profile from the BPS 2024 figures.') +
+      '<section class="kpi-row" aria-label="Province key figures">' +
+      kpiCard({ value: province.population.toFixed(1) + 'M', label: 'Population', source: 'BPS · 2024' }) +
+      kpiCard({ value: formatShare(province.population), label: 'Share of country', source: 'Computed · 2024' }) +
+      kpiCard({ value: Math.round(explorer.densityOf(province)).toLocaleString('en-US') + '/km²', label: 'Density', source: 'Computed · 2024' }) +
+      kpiCard({ value: formatArea(province.area) + ' km²', label: 'Land area', source: 'BPS · 2024' }) +
+      kpiCard({ value: '#' + explorer.rankOf(province, 'population') + ' of 38', label: 'Population rank', source: 'Computed · 2024' }) +
+      kpiCard({ value: '#' + explorer.rankOf(province, 'density') + ' of 38', label: 'Density rank', source: 'Computed · 2024' }) +
+      '</section>' +
+      '<section class="panel"><h2>How ' + esc(province.name) + ' compares</h2>' +
+      charts.progressBar(shareOf(province.population), { ariaLabel: 'Share of national population' }) +
+      '<p>' + esc(province.name) + ' holds ' + formatShare(province.population) + ' of Indonesia’s 283.5M people and ' +
+      islandShare.toFixed(1) + '% of the ' + esc(province.island) + ' island group (' + island.population.toFixed(1) + 'M across ' + island.count + ' provinces). ' +
+      'Its density of ' + Math.round(explorer.densityOf(province)).toLocaleString('en-US') + ' people/km² is ' + multiple.toFixed(1) +
+      '× the national average of 149/km² (BPS · 2024). By land area it ranks #' + explorer.rankOf(province, 'area') + ' of 38.</p>' +
+      '<p class="panel-note">Population and area: BPS 2024. Shares, density and ranks computed from those figures. ' + sourceTag('BPS · 2024') + '</p>' +
+      '<p><a href="#/explore">Compare ' + esc(province.name) + ' with another province</a> · <a href="#/regions">All 38 provinces</a></p></section>';
+  }
+
   window.NusaViews = {
     renderOverview: renderOverview,
     renderPopulation: renderPopulation,
@@ -266,6 +435,13 @@
     renderRegions: renderRegions,
     renderWellbeing: renderWellbeing,
     renderSources: renderSources,
+    renderExplore: renderExplore,
+    renderProvince: renderProvince,
+    explorerChart: explorerChart,
+    explorerTable: explorerTable,
+    auditCard: auditCard,
+    comparePanel: comparePanel,
+    indicatorByKey: indicatorByKey,
     provinceRows: provinceRows
   };
 })();

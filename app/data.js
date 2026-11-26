@@ -247,6 +247,77 @@
     { indicator: 'Island count', value: '17,508 islands', source: 'BPS', year: '2024' }
   ];
 
+  // Indicator catalogue for the Explorer: every entry carries the audit
+  // trail a reader needs — definition, unit, source, year, frequency,
+  // how to read it, and the caveat that stops a misreading. Province-mode
+  // indicators rank the 38 BPS 2024 province figures; series-mode
+  // indicators plot the published national series already on this site.
+  var indicators = [
+    {
+      key: 'population', mode: 'province', label: 'Population by province',
+      unit: 'millions of people', source: 'BPS', year: '2024', frequency: 'Annual estimate',
+      definition: 'Estimated number of usual residents in each province.',
+      howToRead: 'Rank 1 is the most populous province. Shares are computed against the 283.5M national total (World Bank · 2024).',
+      caveat: 'Estimates between censuses; small provinces round to 0.1M, so tiny rank gaps can be rounding.'
+    },
+    {
+      key: 'density', mode: 'province', label: 'Population density',
+      unit: 'people per km²', source: 'Computed from BPS population and area', year: '2024', frequency: 'Computed',
+      definition: 'Province population divided by its land area.',
+      howToRead: 'Higher means people live closer together on average. Jakarta is a city-province, so it sits far above the rest.',
+      caveat: 'Averages hide empty land: a dense capital and empty interior average out inside one province.'
+    },
+    {
+      key: 'area', mode: 'province', label: 'Land area',
+      unit: 'km²', source: 'BPS', year: '2024', frequency: 'Fixed unless boundaries change',
+      definition: 'Land area of each province in square kilometres.',
+      howToRead: 'Rank 1 is the largest province. Compare with population to see why densities differ so widely.',
+      caveat: 'Land area only; sea territory between islands is not counted.'
+    },
+    {
+      key: 'share', mode: 'province', label: 'Share of national population',
+      unit: '% of 283.5M', source: 'Computed from BPS province figures', year: '2024', frequency: 'Computed',
+      definition: 'Each province population as a percentage of the national total.',
+      howToRead: 'Add the top shares to see concentration: the Java provinces together hold well over half the country.',
+      caveat: 'Shares use the World Bank 283.5M national total, so they sum to about 100%, not exactly.'
+    },
+    {
+      key: 'growth', mode: 'series', label: 'GDP growth',
+      unit: '% per year', source: 'BPS', year: '2019–2024', frequency: 'Annual',
+      definition: 'Year-on-year change in real (inflation-adjusted) gross domestic product.',
+      howToRead: 'Above zero means the economy grew. The 2020 bar is negative: output contracted 2.07%.',
+      caveat: 'Annual figures smooth within-year swings; quarterly BPS releases move first.'
+    },
+    {
+      key: 'inflation', mode: 'series', label: 'Inflation, December yoy',
+      unit: '% per year', source: 'BPS', year: '2019–2024', frequency: 'Monthly, December shown',
+      definition: 'Change in consumer prices versus the same month a year earlier, for December.',
+      howToRead: 'Higher means prices rose faster. 2022 peaked at 5.51%; by Dec 2024 it eased to 1.57%.',
+      caveat: 'December only: other months of the same year can differ.'
+    },
+    {
+      key: 'percapita', mode: 'series', label: 'GDP per capita',
+      unit: 'current US$', source: 'World Bank', year: '2019–2024', frequency: 'Annual',
+      definition: 'Gross domestic product divided by population, in current US dollars.',
+      howToRead: 'A rough average income scale, not a typical wage. It fell in 2020, then recovered to US$4,925.',
+      caveat: 'Current dollars move with the exchange rate as well as with real incomes.'
+    },
+    {
+      key: 'poprecent', mode: 'series', label: 'Population, 2015–2024',
+      unit: 'millions of people', source: 'BPS / World Bank', year: '2015–2024', frequency: 'Annual',
+      definition: 'Estimated total population each year.',
+      howToRead: 'The slope is the story: about 28 million more people in a decade.',
+      caveat: 'Annual estimates are revised after each census.'
+    },
+    {
+      key: 'poplong', mode: 'series', label: 'Population, 1961–2024',
+      unit: 'millions of people', source: 'BPS censuses + 2024 estimate', year: '1961–2024', frequency: 'Census years',
+      definition: 'Census counts from 1961 to 2020, plus the 2024 estimate.',
+      howToRead: 'From 97.0M in 1961 to 283.5M in 2024 — nearly tripled in six decades.',
+      caveat: 'Gaps between census years are not shown; do not read yearly change off this chart.'
+    }
+  ];
+
   window.NusaData = {
     headline: headline,
     gdpGrowthSeries: gdpGrowthSeries,
@@ -262,6 +333,7 @@
     wellbeing: wellbeing,
     releases: releases,
     sourceList: sourceList,
+    indicators: indicators,
     nationalPopulation: 283.5
   };
 })();

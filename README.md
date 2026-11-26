@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/best-national-statistics-site-20261126-0539/shania00123/national-stats-atlas-20261126/rank.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539/leaderboard)
 [![reward](https://make.fun/badge/best-national-statistics-site-20261126-0539/shania00123/national-stats-atlas-20261126/reward.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
 
-Nusa in Numbers is a national statistics site for Indonesia. It presents population, economy, regional, and wellbeing figures in plain language, with every number labelled by its source and year. Pages cover an overview dashboard, population structure, economic growth and inflation, a searchable province table, wellbeing indicators, and a sources page with downloadable CSV data.
+Nusa in Numbers is a national statistics site for Indonesia. It presents population, economy, regional, and wellbeing figures in plain language, with every number labelled by its source and year. Pages cover an overview dashboard with island-group totals, population structure, economic growth and inflation, a searchable province table with a profile page for each of the 38 provinces, an Indicator Explorer that ranks provinces or plots national series beside a per-figure audit trail (definition, unit, source, frequency, how to read it, caveat) with a two-province comparison tool and CSV export of the current view, wellbeing indicators, and a sources page with methodology, the figure audit table, and downloadable CSV data.
 
 Competition: https://make.fun/c/best-national-statistics-site-20261126-0539
 
@@ -29,7 +29,8 @@ Then open the local address the server prints and use the section links in the h
 ## Layout
 
 - `app/index.html` — page shell and navigation
-- `app/data.js` — all figures with source and year labels
+- `app/data.js` — all figures with source and year labels, plus the Explorer indicator catalogue with its audit trail
+- `app/explorer.js` — computed derivations: province ranks, island-group totals, series summaries, two-province comparisons
 - `app/charts.js` — SVG chart builders
 - `app/views.js` — one render function per page
 - `app/main.js` — hash routing and control wiring
