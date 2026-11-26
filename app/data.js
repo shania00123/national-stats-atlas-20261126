@@ -53,6 +53,28 @@
     { year: 2024, value: 283.5 }
   ];
 
+  // Long-run population: census years plus the 2024 estimate, in millions.
+  var populationLongSeries = [
+    { year: 1961, value: 97.0 },
+    { year: 1971, value: 119.2 },
+    { year: 1980, value: 147.5 },
+    { year: 1990, value: 179.4 },
+    { year: 2000, value: 206.3 },
+    { year: 2010, value: 237.6 },
+    { year: 2020, value: 270.2 },
+    { year: 2024, value: 283.5 }
+  ];
+
+  // GDP per capita in current US dollars.
+  var gdpPerCapitaSeries = [
+    { year: 2019, value: 4174 },
+    { year: 2020, value: 3912 },
+    { year: 2021, value: 4349 },
+    { year: 2022, value: 4784 },
+    { year: 2023, value: 4919 },
+    { year: 2024, value: 4925 }
+  ];
+
   var ageShares = [
     { label: '0–14', value: 24.1 },
     { label: '15–64', value: 69.3 },
@@ -74,20 +96,50 @@
     balance: { value: '+US$31.0B', label: 'Trade balance', source: 'BPS · 2024' }
   };
 
+  // All 38 provinces: BPS 2024 population estimates (millions) and land area (km²).
+  // Density and share are computed in the views, never stored.
   var provinces = [
-    { name: 'West Java', capital: 'Bandung', population: 50.3 },
-    { name: 'East Java', capital: 'Surabaya', population: 41.8 },
-    { name: 'Central Java', capital: 'Semarang', population: 37.9 },
-    { name: 'North Sumatra', capital: 'Medan', population: 15.6 },
-    { name: 'Banten', capital: 'Serang', population: 12.4 },
-    { name: 'Jakarta', capital: 'Jakarta', population: 10.7 },
-    { name: 'South Sulawesi', capital: 'Makassar', population: 9.5 },
-    { name: 'Lampung', capital: 'Bandar Lampung', population: 9.4 },
-    { name: 'South Sumatra', capital: 'Palembang', population: 8.9 },
-    { name: 'Riau', capital: 'Pekanbaru', population: 6.8 },
-    { name: 'West Sumatra', capital: 'Padang', population: 5.9 },
-    { name: 'East Kalimantan', capital: 'Samarinda', population: 4.1 }
+    { name: 'Aceh', capital: 'Banda Aceh', island: 'Sumatra', population: 5.6, area: 57956 },
+    { name: 'North Sumatra', capital: 'Medan', island: 'Sumatra', population: 15.6, area: 72981 },
+    { name: 'West Sumatra', capital: 'Padang', island: 'Sumatra', population: 5.9, area: 42297 },
+    { name: 'Riau', capital: 'Pekanbaru', island: 'Sumatra', population: 6.8, area: 87024 },
+    { name: 'Jambi', capital: 'Jambi', island: 'Sumatra', population: 3.7, area: 50058 },
+    { name: 'South Sumatra', capital: 'Palembang', island: 'Sumatra', population: 8.9, area: 91592 },
+    { name: 'Bengkulu', capital: 'Bengkulu', island: 'Sumatra', population: 2.1, area: 19919 },
+    { name: 'Lampung', capital: 'Bandar Lampung', island: 'Sumatra', population: 9.4, area: 34624 },
+    { name: 'Bangka Belitung', capital: 'Pangkal Pinang', island: 'Sumatra', population: 1.5, area: 16424 },
+    { name: 'Riau Islands', capital: 'Tanjung Pinang', island: 'Sumatra', population: 2.2, area: 8202 },
+    { name: 'Jakarta', capital: 'Jakarta', island: 'Java', population: 10.7, area: 661 },
+    { name: 'West Java', capital: 'Bandung', island: 'Java', population: 50.3, area: 37004 },
+    { name: 'Central Java', capital: 'Semarang', island: 'Java', population: 37.9, area: 34055 },
+    { name: 'Yogyakarta', capital: 'Yogyakarta', island: 'Java', population: 3.8, area: 3186 },
+    { name: 'East Java', capital: 'Surabaya', island: 'Java', population: 41.8, area: 48106 },
+    { name: 'Banten', capital: 'Serang', island: 'Java', population: 12.4, area: 9663 },
+    { name: 'Bali', capital: 'Denpasar', island: 'Bali & Nusa Tenggara', population: 4.5, area: 5780 },
+    { name: 'West Nusa Tenggara', capital: 'Mataram', island: 'Bali & Nusa Tenggara', population: 5.7, area: 18572 },
+    { name: 'East Nusa Tenggara', capital: 'Kupang', island: 'Bali & Nusa Tenggara', population: 5.7, area: 48718 },
+    { name: 'West Kalimantan', capital: 'Pontianak', island: 'Kalimantan', population: 5.7, area: 147307 },
+    { name: 'Central Kalimantan', capital: 'Palangka Raya', island: 'Kalimantan', population: 2.8, area: 153564 },
+    { name: 'South Kalimantan', capital: 'Banjarbaru', island: 'Kalimantan', population: 4.3, area: 38744 },
+    { name: 'East Kalimantan', capital: 'Samarinda', island: 'Kalimantan', population: 4.1, area: 129066 },
+    { name: 'North Kalimantan', capital: 'Tanjung Selor', island: 'Kalimantan', population: 0.8, area: 75468 },
+    { name: 'North Sulawesi', capital: 'Manado', island: 'Sulawesi', population: 2.7, area: 13852 },
+    { name: 'Central Sulawesi', capital: 'Palu', island: 'Sulawesi', population: 3.1, area: 61841 },
+    { name: 'South Sulawesi', capital: 'Makassar', island: 'Sulawesi', population: 9.5, area: 46717 },
+    { name: 'Southeast Sulawesi', capital: 'Kendari', island: 'Sulawesi', population: 2.8, area: 38068 },
+    { name: 'Gorontalo', capital: 'Gorontalo', island: 'Sulawesi', population: 1.2, area: 11257 },
+    { name: 'West Sulawesi', capital: 'Mamuju', island: 'Sulawesi', population: 1.5, area: 16788 },
+    { name: 'Maluku', capital: 'Ambon', island: 'Maluku & Papua', population: 2.0, area: 46914 },
+    { name: 'North Maluku', capital: 'Sofifi', island: 'Maluku & Papua', population: 1.4, area: 31983 },
+    { name: 'West Papua', capital: 'Manokwari', island: 'Maluku & Papua', population: 0.6, area: 99672 },
+    { name: 'Southwest Papua', capital: 'Sorong', island: 'Maluku & Papua', population: 0.6, area: 39123 },
+    { name: 'Papua', capital: 'Jayapura', island: 'Maluku & Papua', population: 1.1, area: 82680 },
+    { name: 'Central Papua', capital: 'Nabire', island: 'Maluku & Papua', population: 1.4, area: 61593 },
+    { name: 'Highland Papua', capital: 'Wamena', island: 'Maluku & Papua', population: 1.5, area: 51121 },
+    { name: 'South Papua', capital: 'Merauke', island: 'Maluku & Papua', population: 0.5, area: 117849 }
   ];
+
+  var islandGroups = ['Sumatra', 'Java', 'Bali & Nusa Tenggara', 'Kalimantan', 'Sulawesi', 'Maluku & Papua'];
 
   var wellbeing = [
     {
@@ -163,7 +215,10 @@
     { indicator: 'Population density', value: '149/km²', source: 'BPS', year: '2024' },
     { indicator: 'Urban share', value: '59.9%', source: 'UN', year: '2024' },
     { indicator: 'Median age', value: '30.4 yrs', source: 'UN', year: '2024' },
-    { indicator: 'Province populations', value: '12 provinces', source: 'BPS', year: '2024' }
+    { indicator: 'Province populations & areas', value: '38 provinces', source: 'BPS', year: '2024' },
+    { indicator: 'Population 1961–2024', value: '97.0M → 283.5M', source: 'BPS censuses + 2024 estimate', year: '1961–2024' },
+    { indicator: 'GDP per capita 2019–2024', value: 'US$4,174 → US$4,925', source: 'World Bank', year: '2019–2024' },
+    { indicator: 'Island count', value: '17,508 islands', source: 'BPS', year: '2024' }
   ];
 
   window.NusaData = {
@@ -171,10 +226,13 @@
     gdpGrowthSeries: gdpGrowthSeries,
     inflationSeries: inflationSeries,
     populationSeries: populationSeries,
+    populationLongSeries: populationLongSeries,
+    gdpPerCapitaSeries: gdpPerCapitaSeries,
     ageShares: ageShares,
     sectors: sectors,
     trade: trade,
     provinces: provinces,
+    islandGroups: islandGroups,
     wellbeing: wellbeing,
     releases: releases,
     sourceList: sourceList,

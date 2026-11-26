@@ -16,7 +16,7 @@
     sources: views.renderSources
   };
 
-  var regionState = { query: '', sortKey: 'population', sortDir: -1 };
+  var regionState = { query: '', island: 'All', sortKey: 'population', sortDir: -1 };
 
   function currentRoute() {
     var hash = window.location.hash.replace(/^#\/?/, '');
@@ -76,17 +76,30 @@
     });
   }
 
-  // Regions: search filters rows; sort buttons flip direction on repeat clicks.
+  // Regions: island filter and search narrow the rows; sort buttons flip
+  // direction on repeat clicks. Density is derived, never stored.
+  function densityOf(province) {
+    return (province.population * 1000000) / province.area;
+  }
+
+  function sortValue(province, key) {
+    if (key === 'name') return province.name;
+    if (key === 'area') return province.area;
+    if (key === 'density') return densityOf(province);
+    return province.population;
+  }
+
   function filteredProvinces() {
     var query = regionState.query.trim().toLowerCase();
     var rows = data.provinces.filter(function (province) {
+      if (regionState.island !== 'All' && province.island !== regionState.island) return false;
       if (!query) return true;
       return province.name.toLowerCase().indexOf(query) !== -1 ||
         province.capital.toLowerCase().indexOf(query) !== -1;
     });
     rows.sort(function (a, b) {
-      var left = regionState.sortKey === 'name' ? a.name : a.population;
-      var right = regionState.sortKey === 'name' ? b.name : b.population;
+      var left = sortValue(a, regionState.sortKey);
+      var right = sortValue(b, regionState.sortKey);
       if (left < right) return -1 * regionState.sortDir;
       if (left > right) return 1 * regionState.sortDir;
       return 0;
@@ -95,18 +108,36 @@
   }
 
   function refreshProvinceRows() {
+    var rows = filteredProvinces();
     var body = document.getElementById('province-rows');
-    if (body) body.innerHTML = views.provinceRows(filteredProvinces());
+    if (body) body.innerHTML = views.provinceRows(rows);
+    var count = document.getElementById('region-count');
+    if (count) count.textContent = 'Showing ' + rows.length + ' of ' + data.provinces.length + ' provinces';
   }
 
   function markSortButtons() {
+    var bases = {
+      population: 'Sort by population',
+      area: 'Sort by area',
+      density: 'Sort by density',
+      name: 'Sort by name'
+    };
     var sortButtons = document.querySelectorAll('[data-sort]');
     sortButtons.forEach(function (button) {
-      var active = button.getAttribute('data-sort') === regionState.sortKey;
+      var key = button.getAttribute('data-sort');
+      var active = key === regionState.sortKey;
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
-      var base = button.getAttribute('data-sort') === 'name' ? 'Sort by name' : 'Sort by population';
-      button.textContent = active ? base + (regionState.sortDir === 1 ? ' ↑' : ' ↓') : base;
+      button.textContent = active ? bases[key] + (regionState.sortDir === 1 ? ' ↑' : ' ↓') : bases[key];
+    });
+  }
+
+  function markFilterButtons() {
+    var filterButtons = document.querySelectorAll('[data-island]');
+    filterButtons.forEach(function (button) {
+      var active = button.getAttribute('data-island') === regionState.island;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
   }
 
@@ -118,6 +149,14 @@
         refreshProvinceRows();
       });
     }
+    var filterButtons = document.querySelectorAll('[data-island]');
+    filterButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        regionState.island = button.getAttribute('data-island');
+        markFilterButtons();
+        refreshProvinceRows();
+      });
+    });
     var sortButtons = document.querySelectorAll('[data-sort]');
     sortButtons.forEach(function (button) {
       button.addEventListener('click', function () {
@@ -132,6 +171,7 @@
         refreshProvinceRows();
       });
     });
+    markFilterButtons();
     markSortButtons();
     refreshProvinceRows();
   }
@@ -140,10 +180,11 @@
   function csvText(kind) {
     var lines = [];
     if (kind === 'provinces') {
-      lines.push('province,capital,population_millions,share_percent,source,year');
+      lines.push('province,capital,island,population_millions,area_km2,density_per_km2,share_percent,source,year');
       data.provinces.forEach(function (province) {
         var share = ((province.population / data.nationalPopulation) * 100).toFixed(2);
-        lines.push([province.name, province.capital, province.population.toFixed(1), share, 'BPS', '2024'].join(','));
+        var density = Math.round(densityOf(province));
+        lines.push([province.name, province.capital, province.island, province.population.toFixed(1), province.area, density, share, 'BPS', '2024'].join(','));
       });
     } else if (kind === 'economy') {
       lines.push('year,gdp_growth_percent,inflation_dec_yoy_percent,source');
