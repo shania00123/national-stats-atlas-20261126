@@ -144,6 +144,7 @@
   var wellbeing = [
     {
       key: 'hdi',
+      group: 'living',
       label: 'Human Development Index',
       value: '75.02',
       source: 'BPS · 2024',
@@ -152,6 +153,7 @@
     },
     {
       key: 'life',
+      group: 'health',
       label: 'Life expectancy',
       value: '71.7 yrs',
       source: 'World Bank · 2023',
@@ -160,6 +162,7 @@
     },
     {
       key: 'literacy',
+      group: 'education',
       label: 'Literacy',
       value: '96.7%',
       source: 'BPS · 2023',
@@ -168,6 +171,7 @@
     },
     {
       key: 'poverty',
+      group: 'living',
       label: 'Poverty rate',
       value: '8.57%',
       source: 'BPS · Sep 2024',
@@ -176,6 +180,7 @@
     },
     {
       key: 'stunting',
+      group: 'health',
       label: 'Stunting',
       value: '21.5%',
       source: 'Kemenkes SSGI · 2023',
@@ -184,11 +189,30 @@
     },
     {
       key: 'internet',
+      group: 'living',
       label: 'Internet users',
       value: '79.5%',
       source: 'APJII · 2024',
       barPct: 79.5,
       note: 'Share of the population using the internet, a proxy for digital access.'
+    },
+    {
+      key: 'schooling',
+      group: 'education',
+      label: 'Mean years of schooling',
+      value: '9.22',
+      source: 'BPS · 2024',
+      barPct: 61.5,
+      note: 'Average completed years of schooling. Shown against a 15-year scale.'
+    },
+    {
+      key: 'primary',
+      group: 'education',
+      label: 'Primary school participation',
+      value: '99.4%',
+      source: 'BPS · 2024',
+      barPct: 99.4,
+      note: 'Share of children of primary-school age who are in school.'
     }
   ];
 
@@ -209,6 +233,8 @@
     { indicator: 'Poverty rate', value: '8.57%', source: 'BPS', year: 'Sep 2024' },
     { indicator: 'Life expectancy', value: '71.7 yrs', source: 'World Bank', year: '2023' },
     { indicator: 'Literacy', value: '96.7%', source: 'BPS', year: '2023' },
+    { indicator: 'Mean years of schooling', value: '9.22', source: 'BPS', year: '2024' },
+    { indicator: 'Primary school participation', value: '99.4%', source: 'BPS', year: '2024' },
     { indicator: 'Internet users', value: '79.5%', source: 'APJII', year: '2024' },
     { indicator: 'Human Development Index', value: '75.02', source: 'BPS', year: '2024' },
     { indicator: 'Stunting', value: '21.5%', source: 'Kemenkes SSGI', year: '2023' },

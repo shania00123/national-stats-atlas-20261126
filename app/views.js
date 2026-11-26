@@ -19,6 +19,14 @@
       '</article>';
   }
 
+  function miniStat(figure) {
+    return '<article class="mini-stat">' +
+      '<p class="mini-value">' + esc(figure.value) + '</p>' +
+      '<div class="mini-meta"><p class="mini-label">' + esc(figure.label) + '</p>' +
+      sourceTag(figure.source) + '</div>' +
+      '</article>';
+  }
+
   function shareOf(population) {
     return (population / data.nationalPopulation) * 100;
   }
@@ -49,13 +57,9 @@
     var growthBars = data.gdpGrowthSeries.map(function (point) {
       return { label: String(point.year), value: point.value };
     });
-    var topFive = data.provinces.slice().sort(function (a, b) {
-      return b.population - a.population;
-    }).slice(0, 5);
-    var rows = topFive.map(function (province, index) {
-      return '<tr><td>' + (index + 1) + '</td><td>' + esc(province.name) + '</td><td>' +
-        province.population.toFixed(1) + 'M</td><td>' + formatShare(province.population) + '</td></tr>';
-    }).join('');
+    var longBars = data.populationLongSeries.map(function (point) {
+      return { label: String(point.year), value: point.value };
+    });
     var releases = data.releases.map(function (release) {
       return '<li><div><strong>' + esc(release.title) + '</strong><p>' + esc(release.detail) + '</p></div>' +
         sourceTag(release.source) + '</li>';
@@ -73,15 +77,16 @@
       kpiCard(h.gdp) + kpiCard(h.gdpPerCapita) + kpiCard(h.gdpGrowth) +
       kpiCard(h.inflation) + kpiCard(h.unemployment) + kpiCard(h.poverty) +
       '</section>' +
-      '<section class="split">' +
+      '<section class="ministat-band" aria-label="More key figures">' +
+      miniStat(h.hdi) + miniStat(h.lifeExpectancy) + miniStat(h.literacy) + miniStat(h.internet) +
+      '</section>' +
+      '<section class="split split-cover">' +
       '<article class="panel"><h2>GDP growth, 2019–2024</h2>' +
       charts.barChart(growthBars, { unit: '%', ariaLabel: 'GDP growth by year, percent' }) +
       '<p class="panel-note">Annual real GDP growth. The 2020 bar is negative: output contracted 2.07% that year. ' + sourceTag('BPS · 2024') + '</p></article>' +
-      '<article class="panel"><h2>Largest provinces</h2>' +
-      '<div class="table-wrap"><table class="data-table"><thead><tr><th>#</th><th>Province</th><th>Population</th><th>Share</th></tr></thead><tbody>' +
-      rows + '</tbody></table></div>' +
-      '<p class="panel-note">Five provinces hold just over half the national population. ' + sourceTag('BPS · 2024') + '</p>' +
-      '<p><a class="text-link" href="#/regions">See all provinces</a></p></article>' +
+      '<article class="panel"><h2>Population, 1961–2024</h2>' +
+      charts.barChart(longBars, { unit: 'M', color: '#2e7d6b', ariaLabel: 'Population in millions, 1961 to 2024' }) +
+      '<p class="panel-note">From 97.0M in 1961 to 283.5M in 2024 — census years plus the 2024 estimate. ' + sourceTag('BPS censuses + 2024 estimate') + '</p></article>' +
       '</section>' +
       '<section class="panel"><h2>Latest releases</h2><ul class="release-list">' + releases + '</ul></section>';
   }
@@ -127,25 +132,25 @@
       return { label: String(point.year), value: point.value };
     });
     return pageHead('Economy', 'Growth, prices, sectors and trade — the size and shape of the Indonesian economy.') +
-      '<section class="panel"><h2>Growth and prices</h2>' +
+      '<section class="economy-grid">' +
+      '<article class="panel"><h2>Growth and prices</h2>' +
       '<div class="toggle-row" role="group" aria-label="Choose series">' +
       '<button type="button" class="toggle-btn is-active" data-series="growth">GDP growth</button>' +
       '<button type="button" class="toggle-btn" data-series="inflation">Inflation</button>' +
       '</div>' +
       '<div id="economy-chart">' + charts.barChart(growthBars, { unit: '%', ariaLabel: 'GDP growth by year, percent' }) + '</div>' +
-      '<p class="panel-note" id="economy-caption">Annual real GDP growth, 2019–2024. Output contracted 2.07% in 2020, then returned to about 5%. ' + sourceTag('BPS · 2024') + '</p></section>' +
-      '<section class="split">' +
+      '<p class="panel-note" id="economy-caption">Annual real GDP growth, 2019–2024. Output contracted 2.07% in 2020, then returned to about 5%. ' + sourceTag('BPS · 2024') + '</p></article>' +
       '<article class="panel"><h2>Where output comes from, 2024</h2>' +
       charts.donutChart(data.sectors, { centreTop: 'GDP', centreBottom: 'by sector', ariaLabel: 'GDP share by sector, percent' }) +
       '<p class="panel-note">Manufacturing is the largest single sector at 19.0% of GDP; services outside trade make up the biggest combined share. ' + sourceTag('BPS · 2024') + '</p></article>' +
+      '<article class="panel"><h2>GDP per capita, 2019–2024 (US$)</h2>' +
+      charts.barChart(perCapitaBars, { unit: '', color: '#2e7d6b', ariaLabel: 'GDP per capita in US dollars, 2019 to 2024' }) +
+      '<p class="panel-note">Income per person fell to US$3,912 in 2020, then recovered to US$4,925 by 2024. ' + sourceTag('World Bank · 2024') + '</p></article>' +
       '<article class="panel"><h2>Trade, 2024</h2>' +
       '<div class="trade-grid">' + kpiCard(data.trade.exports) + kpiCard(data.trade.imports) + kpiCard(data.trade.balance) + '</div>' +
       '<p class="panel-note">Exports exceeded imports by US$31.0B in 2024, keeping the trade balance in surplus. ' + sourceTag('BPS · 2024') + '</p>' +
-      '<h3>Headline size</h3><div class="trade-grid">' + kpiCard(data.headline.gdp) + kpiCard(data.headline.gdpPerCapita) + '</div></article>' +
-      '</section>' +
-      '<section class="panel"><h2>GDP per capita, 2019–2024 (US$)</h2>' +
-      charts.barChart(perCapitaBars, { unit: '', color: '#2e7d6b', ariaLabel: 'GDP per capita in US dollars, 2019 to 2024' }) +
-      '<p class="panel-note">Income per person fell to US$3,912 in 2020, then recovered to US$4,925 by 2024. ' + sourceTag('World Bank · 2024') + '</p></section>';
+      '<h3>Headline size</h3><div class="trade-grid trade-grid-2">' + kpiCard(data.headline.gdp) + kpiCard(data.headline.gdpPerCapita) + '</div></article>' +
+      '</section>';
   }
 
   function provinceRows(provinces) {
@@ -198,22 +203,34 @@
       '<p class="panel-note">Each tile is one of the 38 provinces; colour depth follows its share of national population. West Java alone holds 17.7%. ' + sourceTag('BPS · 2024') + '</p></section>';
   }
 
+  function wellbeingCard(item) {
+    var color = (item.key === 'poverty' || item.key === 'stunting') ? '#c47b2a' : '#0d4f4a';
+    return '<article class="wellbeing-card">' +
+      '<p class="kpi-value">' + esc(item.value) + '</p>' +
+      '<p class="kpi-label">' + esc(item.label) + '</p>' +
+      charts.progressBar(item.barPct, { color: color, ariaLabel: item.label + ' progress bar' }) +
+      '<p class="wellbeing-note">' + esc(item.note) + '</p>' +
+      sourceTag(item.source) +
+      '</article>';
+  }
+
+  function wellbeingSection(title, group, gridClass) {
+    var cards = data.wellbeing.filter(function (item) {
+      return item.group === group;
+    }).map(wellbeingCard).join('');
+    return '<section class="wellbeing-section"><h2 class="wellbeing-subhead">' + esc(title) + '</h2>' +
+      '<div class="wellbeing-grid ' + gridClass + '">' + cards + '</div></section>';
+  }
+
   function renderWellbeing() {
-    var cards = data.wellbeing.map(function (item) {
-      var color = (item.key === 'poverty' || item.key === 'stunting') ? '#c47b2a' : '#0d4f4a';
-      return '<article class="wellbeing-card">' +
-        '<p class="kpi-value">' + esc(item.value) + '</p>' +
-        '<p class="kpi-label">' + esc(item.label) + '</p>' +
-        charts.progressBar(item.barPct, { color: color, ariaLabel: item.label + ' progress bar' }) +
-        '<p class="wellbeing-note">' + esc(item.note) + '</p>' +
-        sourceTag(item.source) +
-        '</article>';
-    }).join('');
     return pageHead('Wellbeing', 'Health, learning, income and access — how people are doing, not just how the economy is doing.') +
-      '<section class="wellbeing-grid">' + cards + '</section>' +
+      wellbeingSection('Health', 'health', 'wellbeing-grid-2') +
+      wellbeingSection('Education', 'education', '') +
+      wellbeingSection('Living standards & access', 'living', '') +
       '<section class="panel"><h2>Reading these bars</h2>' +
       '<p>Bars for poverty (8.57%, BPS · Sep 2024) and stunting (21.5%, Kemenkes SSGI · 2023) run the other way: shorter is better. ' +
-      'Literacy reaches 96.7% (BPS · 2023) and internet use 79.5% (APJII · 2024), while the Human Development Index stands at 75.02 (BPS · 2024). ' +
+      'Literacy reaches 96.7% (BPS · 2023), mean schooling is 9.22 years (BPS · 2024) and primary participation 99.4% (BPS · 2024), ' +
+      'while internet use is 79.5% (APJII · 2024) and the Human Development Index stands at 75.02 (BPS · 2024). ' +
       'Life expectancy is 71.7 years (World Bank · 2023).</p></section>';
   }
 
@@ -229,7 +246,7 @@
       'all 38 province populations and land areas are BPS 2024 figures, with density computed as population ÷ area and shares computed against the 283.5M national total. ' +
       'Charts plot the published values directly — no modelling, smoothing or seasonal adjustment is added by this site.</p>' +
       '<p>Percentages in the sector chart sum to 100% of GDP. Age shares sum to 100% of population. ' +
-      'Wellbeing bars scale each indicator to its natural maximum, except life expectancy, which is shown against 85 years.</p></section>' +
+      'Wellbeing bars scale each indicator to its natural maximum, except life expectancy, shown against 85 years, and mean schooling, shown against 15 years.</p></section>' +
       '<section class="panel"><h2>Source list</h2>' +
       '<div class="table-wrap"><table class="data-table"><thead><tr><th>Indicator</th><th>Value</th><th>Source</th><th>Year</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section>' +
